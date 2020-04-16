@@ -28,7 +28,7 @@
               />
             </div>
 
-            <Editor ref="editor" />
+            <Editor ref="editor" :selectedTextFromTutorial="selectedTextFromTutorial"/>
           </pane>
           <pane class="rightPane" v-if="showTutorial" ref="tutorialPane">
             <div class="buttonContainer">
@@ -60,14 +60,35 @@ export default {
     Splitpanes,
     Pane
   },
+  mounted() {
+    window.addEventListener('mousemove', this.startDrag);
+    window.addEventListener('mouseup', this.stopDrag);
+  },
   methods: {
     resizeEditor: function() {
       this.$refs.editor.$children[0].getEditor().layout();
       this.$refs.tutorial.$children[0].getEditor().layout();
+    },
+    startDrag: function (e) {
+      let copyBlock = document.getElementById('copyBlock')
+      if (copyBlock) {
+        copyBlock.style.top = e.clientY + 'px';
+        copyBlock.style.left = (e.clientX + 30) + 'px';
+        this.selectedTextFromTutorial = copyBlock.textContent
+      } else {
+        this.selectedTextFromTutorial = ""
+      }
+    },
+    stopDrag: function () {
+      let copyBlock = document.getElementById('copyBlock')
+      if (copyBlock) {
+        copyBlock.remove();
+      }
     }
   },
   data() {
     return {
+      selectedTextFromTutorial: "",
       showEditor: true,
       showTutorial: true
     };

@@ -5,6 +5,7 @@
     language="javascript"
     class="editor"
     ref="tutorial"
+    @editorDidMount="editorDidMount"
   />
 </template>
 
@@ -22,6 +23,43 @@ export default {
   methods: {
     resizeEditor: function() {
       this.$refs.tutorial.getEditor().layout();
+    },
+    editorDidMount(editor) {
+      editor.onDidChangeCursorSelection(e => {
+        this.getSelection(e);
+      });
+      editor.onMouseDown(() => {
+        this.mouseDown = true;
+      });
+      editor.onMouseUp(() => {
+        this.mouseDown = false;
+      });
+
+      editor.onMouseLeave(e => {
+        if (this.mouseDown === true && this.selectedText !== "") {
+          let copyBlockDiv = document.createElement("div");
+          copyBlockDiv.id = "copyBlock";
+          copyBlockDiv.className = "block";
+          copyBlockDiv.textContent = this.selectedText;
+          copyBlockDiv.style.background = "transparent";
+          copyBlockDiv.style.color = "lightGrey";
+          copyBlockDiv.style.top = e.event.posy + "px";
+          copyBlockDiv.style.left = e.event.posx + "px";
+          copyBlockDiv.style.zIndex = "99";
+          copyBlockDiv.style.padding = "10px";
+          copyBlockDiv.style.width = "300px";
+          copyBlockDiv.style.position = "absolute";
+          document.getElementsByTagName("body")[0].appendChild(copyBlockDiv);
+          this.mouseDown = false;
+        }
+      });
+    },
+    getSelection: function() {
+      let editor = this.$refs.tutorial.getEditor();
+      let selectedText = editor
+        .getModel()
+        .getValueInRange(editor.getSelection());
+      this.selectedText = selectedText;
     }
   },
   computed: {
@@ -37,8 +75,10 @@ export default {
   },
   data() {
     return {
+      mouseDown: false,
+      selectedText: "",
       code:
-        "class App extends Component { \n constructor() { /n super(); \n this.state = { \n name: 'React' \n }; \n }"
+        'class App extends Component {\n  constructor() {\n    super();\n    this.state = {\n      name: "React"\n    };\n  }\n}'
     };
   }
 };
